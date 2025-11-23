@@ -1,4 +1,6 @@
 #include "toolpanel.h"
+#include "lassotool.h"
+#include "clonestamptool.h"
 #include <QGridLayout>
 #include <QGroupBox>
 
@@ -49,6 +51,20 @@ void ToolPanel::setupUI()
     m_magicWandBtn->setCheckable(true);
     m_toolGroup->addButton(m_magicWandBtn, 3);
     toolLayout->addWidget(m_magicWandBtn, 1, 1);
+    
+    QToolButton *lassoBtn = new QToolButton(this);
+    lassoBtn->setText("L");
+    lassoBtn->setToolTip("Lasso Tool (L)");
+    lassoBtn->setCheckable(true);
+    m_toolGroup->addButton(lassoBtn, 4);
+    toolLayout->addWidget(lassoBtn, 2, 0);
+    
+    QToolButton *cloneBtn = new QToolButton(this);
+    cloneBtn->setText("S");
+    cloneBtn->setToolTip("Clone Stamp (S)");
+    cloneBtn->setCheckable(true);
+    m_toolGroup->addButton(cloneBtn, 5);
+    toolLayout->addWidget(cloneBtn, 2, 1);
     
     connect(m_toolGroup, QOverload<int>::of(&QButtonGroup::buttonClicked), 
             this, &ToolPanel::onToolButtonClicked);
@@ -167,6 +183,17 @@ void ToolPanel::onToolButtonClicked(int id)
         case 3: // Magic Wand
             tool = std::make_shared<LibreCanvas::MagicWandTool>();
             break;
+        case 4: // Lasso
+            tool = std::make_shared<LibreCanvas::LassoTool>();
+            break;
+        case 5: // Clone Stamp
+            tool = std::make_shared<LibreCanvas::CloneStampTool>();
+            if (auto cloneTool = std::dynamic_pointer_cast<LibreCanvas::CloneStampTool>(tool)) {
+                cloneTool->setSize(m_sizeSlider->value());
+                cloneTool->setHardness(m_hardnessSlider->value() / 100.0f);
+                cloneTool->setOpacity(m_opacitySlider->value() / 100.0f);
+            }
+            break;
     }
     
     if (tool) {
@@ -193,6 +220,8 @@ void ToolPanel::onBrushSizeChanged(int value)
         brushTool->setSize(value);
     } else if (auto eraserTool = std::dynamic_pointer_cast<LibreCanvas::EraserTool>(m_currentTool)) {
         eraserTool->setSize(value);
+    } else if (auto cloneTool = std::dynamic_pointer_cast<LibreCanvas::CloneStampTool>(m_currentTool)) {
+        cloneTool->setSize(value);
     }
 }
 
@@ -204,6 +233,8 @@ void ToolPanel::onBrushHardnessChanged(int value)
         brushTool->setHardness(hardness);
     } else if (auto eraserTool = std::dynamic_pointer_cast<LibreCanvas::EraserTool>(m_currentTool)) {
         eraserTool->setHardness(hardness);
+    } else if (auto cloneTool = std::dynamic_pointer_cast<LibreCanvas::CloneStampTool>(m_currentTool)) {
+        cloneTool->setHardness(hardness);
     }
 }
 
@@ -215,6 +246,8 @@ void ToolPanel::onBrushOpacityChanged(int value)
         brushTool->setOpacity(opacity);
     } else if (auto eraserTool = std::dynamic_pointer_cast<LibreCanvas::EraserTool>(m_currentTool)) {
         eraserTool->setOpacity(opacity);
+    } else if (auto cloneTool = std::dynamic_pointer_cast<LibreCanvas::CloneStampTool>(m_currentTool)) {
+        cloneTool->setOpacity(opacity);
     }
 }
 

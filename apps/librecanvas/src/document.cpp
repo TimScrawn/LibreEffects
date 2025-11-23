@@ -1,4 +1,5 @@
 #include "document.h"
+#include "history.h"
 #include <QPainter>
 #include <algorithm>
 
@@ -7,6 +8,7 @@ namespace LibreCanvas {
     Document::Document(int width, int height, const QColor& backgroundColor)
         : m_size(width, height)
         , m_backgroundColor(backgroundColor)
+        , m_historyManager(nullptr)
     {
         // Create initial background layer
         auto bgLayer = std::make_shared<Layer>("Background", width, height);
@@ -128,19 +130,48 @@ namespace LibreCanvas {
         return result;
     }
 
-    void Document::saveState()
+    void Document::saveState(const QString& description)
     {
-        // TODO: Implement history/undo system
+        if (m_historyManager) {
+            auto self = shared_from_this();
+            m_historyManager->pushState(self, description);
+        }
+    }
+
+    bool Document::canUndo() const
+    {
+        return m_historyManager && m_historyManager->canUndo();
+    }
+
+    bool Document::canRedo() const
+    {
+        return m_historyManager && m_historyManager->canRedo();
     }
 
     void Document::undo()
     {
-        // TODO: Implement undo
+        if (!m_historyManager) return;
+        
+        auto doc = m_historyManager->undo();
+        if (doc) {
+            // Copy state from history
+            m_layers = doc->m_layers;
+            m_activeLayer = doc->m_activeLayer;
+            m_groups = doc->m_groups;
+        }
     }
 
     void Document::redo()
     {
-        // TODO: Implement redo
+        if (!m_historyManager) return;
+        
+        auto doc = m_historyManager->redo();
+        if (doc) {
+            // Copy state from history
+            m_layers = doc->m_layers;
+            m_activeLayer = doc->m_activeLayer;
+            m_groups = doc->m_groups;
+        }
     }
 
 } // namespace LibreCanvas

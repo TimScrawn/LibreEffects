@@ -1,5 +1,6 @@
 #include "canvaswidget.h"
 #include "tool.h"
+#include "history.h"
 #include <QPainter>
 #include <QWheelEvent>
 #include <QMouseEvent>
@@ -8,6 +9,7 @@
 #include <QMessageBox>
 #include <QPen>
 #include <QBrush>
+#include <QApplication>
 
 CanvasWidget::CanvasWidget(QWidget *parent)
     : QWidget(parent)
@@ -37,8 +39,12 @@ bool CanvasWidget::loadImage(const QString &filePath)
     
     // Create document with loaded image
     m_document = std::make_shared<LibreCanvas::Document>(loadedImage.width(), loadedImage.height());
+    if (m_historyManager) {
+        m_document->setHistoryManager(m_historyManager.get());
+    }
     auto layer = std::make_shared<LibreCanvas::Layer>("Layer 1", loadedImage);
     m_document->addLayer(layer);
+    m_document->saveState("Load Image");
     
     m_zoomLevel = 1.0f;
     m_panDelta = QPoint(0, 0);
@@ -75,6 +81,10 @@ bool CanvasWidget::saveImage(const QString &filePath)
 void CanvasWidget::newImage(int width, int height)
 {
     m_document = std::make_shared<LibreCanvas::Document>(width, height, Qt::white);
+    if (m_historyManager) {
+        m_document->setHistoryManager(m_historyManager.get());
+        m_document->saveState("New Image");
+    }
     m_zoomLevel = 1.0f;
     m_panDelta = QPoint(0, 0);
     updatePixmap();
@@ -87,9 +97,21 @@ void CanvasWidget::newImage(int width, int height)
 void CanvasWidget::setDocument(std::shared_ptr<LibreCanvas::Document> document)
 {
     m_document = document;
+    if (m_document && m_historyManager) {
+        m_document->setHistoryManager(m_historyManager.get());
+        m_document->saveState("New Document");
+    }
     updatePixmap();
     update();
     emit documentChanged();
+}
+
+void CanvasWidget::setHistoryManager(std::shared_ptr<LibreCanvas::HistoryManager> manager)
+{
+    m_historyManager = manager;
+    if (m_document && m_historyManager) {
+        m_document->setHistoryManager(m_historyManager.get());
+    }
 }
 
 void CanvasWidget::zoomIn()
@@ -225,6 +247,7 @@ void CanvasWidget::mousePressEvent(QMouseEvent *event)
     if (m_currentTool && m_document && event->button() == Qt::LeftButton) {
         QPoint imagePos = canvasToImage(event->pos());
         m_currentTool->onMousePress(event, m_document, imagePos);
+        updatePixmap();
         update();
     }
 }
@@ -259,6 +282,9 @@ void CanvasWidget::mouseReleaseEvent(QMouseEvent *event)
     if (m_currentTool && m_document && event->button() == Qt::LeftButton) {
         QPoint imagePos = canvasToImage(event->pos());
         m_currentTool->onMouseRelease(event, m_document, imagePos);
+        if (m_document) {
+            m_document->saveState("Tool Operation");
+        }
         updatePixmap();
         update();
         emit imageChanged();
@@ -299,6 +325,7 @@ void CanvasWidget::updatePixmap()
     QImage rendered = m_document->render();
     QSize scaledSize = rendered.size() * m_zoomLevel;
     m_pixmap = QPixmap::fromImage(rendered.scaled(scaledSize, Qt::KeepAspectRatio, Qt::SmoothTransformation));
+    update();
 }
 
 QImage CanvasWidget::getImage() const

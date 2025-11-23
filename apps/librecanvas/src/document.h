@@ -41,12 +41,13 @@ namespace LibreCanvas {
         QImage render() const;
         QImage renderToImage(const QSize& size) const;
 
-        // History/Undo (placeholder for future implementation)
-        void saveState();
-        bool canUndo() const { return false; } // TODO: implement
-        bool canRedo() const { return false; } // TODO: implement
-        void undo(); // TODO: implement
-        void redo(); // TODO: implement
+        // History/Undo
+        void setHistoryManager(class HistoryManager* manager) { m_historyManager = manager; }
+        void saveState(const QString& description = "");
+        bool canUndo() const;
+        bool canRedo() const;
+        void undo();
+        void redo();
 
     private:
         QSize m_size;
@@ -54,6 +55,7 @@ namespace LibreCanvas {
         std::vector<std::shared_ptr<Layer>> m_layers;
         std::vector<std::shared_ptr<LayerGroup>> m_groups;
         std::shared_ptr<Layer> m_activeLayer;
+        class HistoryManager* m_historyManager;
     };
 
 } // namespace LibreCanvas

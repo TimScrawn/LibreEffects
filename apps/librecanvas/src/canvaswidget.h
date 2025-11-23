@@ -28,11 +28,15 @@ public:
     std::shared_ptr<LibreCanvas::Document> getDocument() { return m_document; }
     void setDocument(std::shared_ptr<LibreCanvas::Document> document);
     
+    // History
+    void setHistoryManager(std::shared_ptr<LibreCanvas::HistoryManager> manager);
+    
     // Canvas operations
     void zoomIn();
     void zoomOut();
     void resetZoom();
     void fitToWindow();
+    void updatePixmap();
     
     // Getters
     QImage getImage() const;
@@ -60,6 +64,7 @@ protected:
 private:
     std::shared_ptr<LibreCanvas::Document> m_document;
     std::shared_ptr<LibreCanvas::Tool> m_currentTool;
+    std::shared_ptr<LibreCanvas::HistoryManager> m_historyManager;
     QPixmap m_pixmap;
     float m_zoomLevel;
     QPoint m_panStart;

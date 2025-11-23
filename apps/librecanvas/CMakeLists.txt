@@ -29,6 +29,12 @@ set(SOURCES
     src/tool.h
     src/toolpanel.cpp
     src/toolpanel.h
+    src/history.cpp
+    src/history.h
+    src/lassotool.cpp
+    src/lassotool.h
+    src/clonestamptool.cpp
+    src/clonestamptool.h
 )
 
 # Application resources

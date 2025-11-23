@@ -27,8 +27,6 @@ namespace LibreCanvas {
         
         drawBrush(painter, imagePos, m_size, m_hardness, m_color, m_opacity);
         painter.end();
-        
-        doc->saveState();
     }
 
     void BrushTool::onMouseMove(QMouseEvent *event, std::shared_ptr<Document> doc, const QPoint& imagePos)
@@ -111,8 +109,6 @@ namespace LibreCanvas {
         
         eraseBrush(painter, imagePos, m_size, m_hardness, m_opacity);
         painter.end();
-        
-        doc->saveState();
     }
 
     void EraserTool::onMouseMove(QMouseEvent *event, std::shared_ptr<Document> doc, const QPoint& imagePos)

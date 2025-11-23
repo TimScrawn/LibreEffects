@@ -76,6 +76,9 @@ private:
     class ToolPanel *m_toolPanel;
     QDockWidget *m_toolDock;
     
+    // History
+    std::shared_ptr<class HistoryManager> m_historyManager;
+    
     // Layer management
     void createLayer();
     void deleteLayer();

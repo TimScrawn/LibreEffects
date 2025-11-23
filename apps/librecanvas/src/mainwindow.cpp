@@ -2,6 +2,7 @@
 #include "canvaswidget.h"
 #include "layerpanel.h"
 #include "toolpanel.h"
+#include "history.h"
 #include <QAction>
 #include <QMenuBar>
 #include <QToolBar>
@@ -26,8 +27,12 @@ MainWindow::MainWindow(QWidget *parent)
     setMinimumSize(800, 600);
     resize(1200, 800);
     
+    // Create history manager
+    m_historyManager = std::make_shared<LibreCanvas::HistoryManager>(this);
+    
     // Create canvas widget
     m_canvasWidget = new CanvasWidget(this);
+    m_canvasWidget->setHistoryManager(m_historyManager);
     setCentralWidget(m_canvasWidget);
     
     // Connect canvas signals

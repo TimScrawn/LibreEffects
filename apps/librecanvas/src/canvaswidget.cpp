@@ -1,9 +1,13 @@
 #include "canvaswidget.h"
+#include "tool.h"
 #include <QPainter>
 #include <QWheelEvent>
 #include <QMouseEvent>
+#include <QKeyEvent>
 #include <QFileInfo>
 #include <QMessageBox>
+#include <QPen>
+#include <QBrush>
 
 CanvasWidget::CanvasWidget(QWidget *parent)
     : QWidget(parent)
@@ -17,6 +21,9 @@ CanvasWidget::CanvasWidget(QWidget *parent)
     
     // Set background pattern for transparency
     setStyleSheet("background-color: #2a2a2a;");
+    
+    // Set default tool (Brush)
+    m_currentTool = std::make_shared<LibreCanvas::BrushTool>();
 }
 
 bool CanvasWidget::loadImage(const QString &filePath)
@@ -151,12 +158,46 @@ void CanvasWidget::paintEvent(QPaintEvent *event)
         QSize scaledSize = m_pixmap.size();
         QPoint drawPos = (rect().center() - QRect(0, 0, scaledSize.width(), scaledSize.height()).center()) + m_panDelta;
         painter.drawPixmap(drawPos, m_pixmap);
+        
+        // Draw selection overlay
+        drawSelection(painter);
     } else {
         // Draw placeholder text
         painter.setPen(Qt::gray);
         painter.setFont(QFont("Arial", 14));
         painter.drawText(rect(), Qt::AlignCenter, "No image loaded\n\nFile → New or File → Open");
     }
+}
+
+void CanvasWidget::drawSelection(QPainter& painter)
+{
+    if (!m_currentTool) return;
+    
+    // Draw marquee selection
+    if (m_currentTool->getType() == LibreCanvas::ToolType::MarqueeRect) {
+        auto marqueeTool = std::dynamic_pointer_cast<LibreCanvas::MarqueeRectTool>(m_currentTool);
+        if (marqueeTool && marqueeTool->hasSelection()) {
+            QRect selection = marqueeTool->getSelection();
+            QSize docSize = m_document->getSize();
+            QSize scaledSize = docSize * m_zoomLevel;
+            QPoint canvasCenter = rect().center() + m_panDelta;
+            QPoint imageTopLeft = canvasCenter - QPoint(scaledSize.width() / 2, scaledSize.height() / 2);
+            
+            QRect scaledSelection(
+                imageTopLeft.x() + selection.x() * m_zoomLevel,
+                imageTopLeft.y() + selection.y() * m_zoomLevel,
+                selection.width() * m_zoomLevel,
+                selection.height() * m_zoomLevel
+            );
+            
+            // Draw marching ants effect
+            QPen pen(Qt::white, 1, Qt::DashLine);
+            painter.setPen(pen);
+            painter.setBrush(Qt::NoBrush);
+            painter.drawRect(scaledSelection);
+        }
+    }
+}
 }
 
 void CanvasWidget::wheelEvent(QWheelEvent *event)
@@ -177,6 +218,14 @@ void CanvasWidget::mousePressEvent(QMouseEvent *event)
     if (event->button() == Qt::MiddleButton) {
         m_isPanning = true;
         m_panStart = event->pos();
+        return;
+    }
+    
+    // Handle tool
+    if (m_currentTool && m_document && event->button() == Qt::LeftButton) {
+        QPoint imagePos = canvasToImage(event->pos());
+        m_currentTool->onMousePress(event, m_document, imagePos);
+        update();
     }
 }
 
@@ -187,13 +236,56 @@ void CanvasWidget::mouseMoveEvent(QMouseEvent *event)
         m_panDelta += delta;
         m_panStart = event->pos();
         update();
+        return;
+    }
+    
+    // Handle tool
+    if (m_currentTool && m_document && event->buttons() & Qt::LeftButton) {
+        QPoint imagePos = canvasToImage(event->pos());
+        m_currentTool->onMouseMove(event, m_document, imagePos);
+        updatePixmap();
+        update();
     }
 }
 
 void CanvasWidget::mouseReleaseEvent(QMouseEvent *event)
 {
-    if (event->button() == Qt::MiddleButton || event->button() == Qt::LeftButton) {
+    if (event->button() == Qt::MiddleButton) {
         m_isPanning = false;
+        return;
+    }
+    
+    // Handle tool
+    if (m_currentTool && m_document && event->button() == Qt::LeftButton) {
+        QPoint imagePos = canvasToImage(event->pos());
+        m_currentTool->onMouseRelease(event, m_document, imagePos);
+        updatePixmap();
+        update();
+        emit imageChanged();
+    }
+}
+
+void CanvasWidget::keyPressEvent(QKeyEvent *event)
+{
+    if (m_currentTool) {
+        m_currentTool->onKeyPress(event);
+    }
+    QWidget::keyPressEvent(event);
+}
+
+void CanvasWidget::keyReleaseEvent(QKeyEvent *event)
+{
+    if (m_currentTool) {
+        m_currentTool->onKeyRelease(event);
+    }
+    QWidget::keyReleaseEvent(event);
+}
+
+void CanvasWidget::setTool(std::shared_ptr<LibreCanvas::Tool> tool)
+{
+    m_currentTool = tool;
+    if (tool) {
+        setCursor(tool->getCursor());
     }
 }
 

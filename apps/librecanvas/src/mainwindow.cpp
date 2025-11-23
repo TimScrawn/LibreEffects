@@ -1,5 +1,7 @@
 #include "mainwindow.h"
 #include "canvaswidget.h"
+#include "layerpanel.h"
+#include "toolpanel.h"
 #include <QAction>
 #include <QMenuBar>
 #include <QToolBar>
@@ -13,6 +15,7 @@
 #include <QHBoxLayout>
 #include <QWidget>
 #include <QFileInfo>
+#include <QDockWidget>
 
 MainWindow::MainWindow(QWidget *parent)
     : QMainWindow(parent)
@@ -34,8 +37,33 @@ MainWindow::MainWindow(QWidget *parent)
     createMenus();
     createToolBars();
     createStatusBar();
+    setupPanels();
     applyTheme();
     updateStatusBar();
+    
+    // Connect canvas document changes to layer panel
+    connect(m_canvasWidget, &CanvasWidget::documentChanged, this, [this]() {
+        if (m_canvasWidget->getDocument()) {
+            m_layerPanel->setDocument(m_canvasWidget->getDocument());
+        }
+    });
+    
+    // Connect layer panel signals
+    connect(m_layerPanel, &LayerPanel::layerSelected, this, [this](std::shared_ptr<LibreCanvas::Layer> layer) {
+        if (m_canvasWidget->getDocument()) {
+            m_canvasWidget->getDocument()->setActiveLayer(layer);
+            m_canvasWidget->update();
+        }
+    });
+    connect(m_layerPanel, &LayerPanel::layerVisibilityChanged, this, [this](auto, bool) {
+        m_canvasWidget->update();
+    });
+    connect(m_layerPanel, &LayerPanel::layerOpacityChanged, this, [this](auto, float) {
+        m_canvasWidget->update();
+    });
+    connect(m_layerPanel, &LayerPanel::layerBlendModeChanged, this, [this](auto, auto) {
+        m_canvasWidget->update();
+    });
 }
 
 MainWindow::~MainWindow()
@@ -141,6 +169,36 @@ void MainWindow::createStatusBar()
     statusBar()->showMessage("Welcome to LibreCanvas", 3000);
 }
 
+void MainWindow::setupPanels()
+{
+    // Tool Panel (left side)
+    m_toolPanel = new ToolPanel(this);
+    m_toolDock = new QDockWidget("Tools", this);
+    m_toolDock->setWidget(m_toolPanel);
+    m_toolDock->setAllowedAreas(Qt::LeftDockWidgetArea | Qt::RightDockWidgetArea);
+    addDockWidget(Qt::LeftDockWidgetArea, m_toolDock);
+    
+    // Layer Panel (right side)
+    m_layerPanel = new LayerPanel(this);
+    m_layerDock = new QDockWidget("Layers", this);
+    m_layerDock->setWidget(m_layerPanel);
+    m_layerDock->setAllowedAreas(Qt::LeftDockWidgetArea | Qt::RightDockWidgetArea);
+    addDockWidget(Qt::RightDockWidgetArea, m_layerDock);
+    
+    // Connect tool panel to canvas
+    connect(m_toolPanel, &ToolPanel::toolChanged, m_canvasWidget, &CanvasWidget::setTool);
+    connect(m_toolPanel, &ToolPanel::brushSizeChanged, m_toolPanel, [this](int size) {
+        if (auto brushTool = std::dynamic_pointer_cast<LibreCanvas::BrushTool>(m_canvasWidget->getCurrentTool())) {
+            brushTool->setSize(size);
+        }
+    });
+    connect(m_toolPanel, &ToolPanel::brushColorChanged, m_toolPanel, [this](const QColor& color) {
+        if (auto brushTool = std::dynamic_pointer_cast<LibreCanvas::BrushTool>(m_canvasWidget->getCurrentTool())) {
+            brushTool->setColor(color);
+        }
+    });
+}
+
 void MainWindow::applyTheme()
 {
     // Apply dark theme styling
@@ -182,6 +240,9 @@ void MainWindow::newFile()
     if (!ok) return;
     
     m_canvasWidget->newImage(width, height);
+    if (m_canvasWidget->getDocument()) {
+        m_layerPanel->setDocument(m_canvasWidget->getDocument());
+    }
     m_statusLabel->setText(QString("New image created: %1x%2").arg(width).arg(height));
     updateStatusBar();
 }
@@ -193,6 +254,9 @@ void MainWindow::openFile()
         "Image Files (*.png *.jpg *.jpeg *.bmp *.tiff *.gif *.webp);;All Files (*.*)");
     if (!fileName.isEmpty()) {
         if (m_canvasWidget->loadImage(fileName)) {
+            if (m_canvasWidget->getDocument()) {
+                m_layerPanel->setDocument(m_canvasWidget->getDocument());
+            }
             m_statusLabel->setText("Opened: " + QFileInfo(fileName).fileName());
             updateStatusBar();
         }

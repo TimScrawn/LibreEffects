@@ -5,8 +5,10 @@
 #include <QToolBar>
 #include <QStatusBar>
 #include <QLabel>
+#include <QDockWidget>
 #include "../../libs/branding/theme.h"
 #include "canvaswidget.h"
+#include "layerpanel.h"
 
 QT_BEGIN_NAMESPACE
 class QAction;
@@ -68,9 +70,16 @@ private:
     // Canvas widget
     CanvasWidget *m_canvasWidget;
     
+    // Panels
+    LayerPanel *m_layerPanel;
+    QDockWidget *m_layerDock;
+    class ToolPanel *m_toolPanel;
+    QDockWidget *m_toolDock;
+    
     // Layer management
     void createLayer();
     void deleteLayer();
+    void setupPanels();
     
     // Theme
     LibreEffects::Branding::Theme m_theme;

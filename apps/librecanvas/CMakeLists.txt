@@ -23,6 +23,12 @@ set(SOURCES
     src/layer.h
     src/document.cpp
     src/document.h
+    src/layerpanel.cpp
+    src/layerpanel.h
+    src/tool.cpp
+    src/tool.h
+    src/toolpanel.cpp
+    src/toolpanel.h
 )
 
 # Application resources

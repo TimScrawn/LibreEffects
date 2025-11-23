@@ -6,9 +6,11 @@
 #include <QPainter>
 #include <QWheelEvent>
 #include <QMouseEvent>
+#include <QKeyEvent>
 #include <QPoint>
 #include <memory>
 #include "document.h"
+#include "tool.h"
 
 class CanvasWidget : public QWidget
 {
@@ -37,6 +39,10 @@ public:
     float getZoomLevel() const { return m_zoomLevel; }
     bool hasImage() const { return m_document != nullptr; }
 
+    // Tool management
+    void setTool(std::shared_ptr<LibreCanvas::Tool> tool);
+    std::shared_ptr<LibreCanvas::Tool> getCurrentTool() const { return m_currentTool; }
+
 signals:
     void imageChanged();
     void zoomChanged(float zoom);
@@ -48,9 +54,12 @@ protected:
     void mousePressEvent(QMouseEvent *event) override;
     void mouseMoveEvent(QMouseEvent *event) override;
     void mouseReleaseEvent(QMouseEvent *event) override;
+    void keyPressEvent(QKeyEvent *event) override;
+    void keyReleaseEvent(QKeyEvent *event) override;
 
 private:
     std::shared_ptr<LibreCanvas::Document> m_document;
+    std::shared_ptr<LibreCanvas::Tool> m_currentTool;
     QPixmap m_pixmap;
     float m_zoomLevel;
     QPoint m_panStart;
@@ -60,5 +69,6 @@ private:
     void updatePixmap();
     QPoint imageToCanvas(const QPoint &point) const;
     QPoint canvasToImage(const QPoint &point) const;
+    void drawSelection(QPainter& painter);
 };
 

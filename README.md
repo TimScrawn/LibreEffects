@@ -31,9 +31,7 @@ Our goal is to create a comprehensive, free, and open-source suite of creative a
 
 ## 🤝 Contributing
 
-We welcome contributions! Please see:
-- [CONTRIBUTING.md](CONTRIBUTING.md) - Guidelines for contributing to this project
-- [COLLABORATION_WORKFLOW.md](COLLABORATION_WORKFLOW.md) - How to collaborate using Git, GitHub, and Cursor
+We welcome contributions! Please see [CONTRIBUTING.md](CONTRIBUTING.md) for guidelines on how to contribute to this project.
 
 ## 📝 License
 

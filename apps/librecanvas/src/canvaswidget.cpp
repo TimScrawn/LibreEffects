@@ -159,8 +159,7 @@ void CanvasWidget::wheelEvent(QWheelEvent *event)
 
 void CanvasWidget::mousePressEvent(QMouseEvent *event)
 {
-    if (event->button() == Qt::MiddleButton || 
-        (event->button() == Qt::LeftButton && event->modifiers() & Qt::Space)) {
+    if (event->button() == Qt::MiddleButton) {
         m_isPanning = true;
         m_panStart = event->pos();
     }

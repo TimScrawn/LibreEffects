@@ -7,13 +7,12 @@ set(CMAKE_CXX_STANDARD_REQUIRED ON)
 # Branding library will be added from parent CMakeLists
 
 # Core library (placeholder for future core components)
-add_library(core STATIC
-    # Core components will be added here
-)
+# For now, we'll create an interface library since there are no sources yet
+add_library(core INTERFACE)
 
-target_include_directories(core PUBLIC
+target_include_directories(core INTERFACE
     ${CMAKE_CURRENT_SOURCE_DIR}
 )
 
-target_link_libraries(core PUBLIC branding)
+target_link_libraries(core INTERFACE branding)
 

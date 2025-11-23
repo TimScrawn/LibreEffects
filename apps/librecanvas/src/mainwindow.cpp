@@ -240,7 +240,13 @@ void MainWindow::updateStatusBar()
 {
     if (m_canvasWidget->hasImage()) {
         QImage img = m_canvasWidget->getImage();
-        m_sizeLabel->setText(QString("Size: %1x%2").arg(img.width()).arg(img.height()));
+        auto doc = m_canvasWidget->getDocument();
+        if (doc) {
+            int layerCount = doc->getLayerCount();
+            m_sizeLabel->setText(QString("Size: %1x%2 | Layers: %3").arg(img.width()).arg(img.height()).arg(layerCount));
+        } else {
+            m_sizeLabel->setText(QString("Size: %1x%2").arg(img.width()).arg(img.height()));
+        }
         m_zoomLabel->setText(QString("Zoom: %1%").arg(static_cast<int>(m_canvasWidget->getZoomLevel() * 100)));
     } else {
         m_sizeLabel->setText("Size: -");

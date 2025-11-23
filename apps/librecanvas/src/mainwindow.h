@@ -68,6 +68,10 @@ private:
     // Canvas widget
     CanvasWidget *m_canvasWidget;
     
+    // Layer management
+    void createLayer();
+    void deleteLayer();
+    
     // Theme
     LibreEffects::Branding::Theme m_theme;
 };

@@ -7,6 +7,8 @@
 #include <QWheelEvent>
 #include <QMouseEvent>
 #include <QPoint>
+#include <memory>
+#include "document.h"
 
 class CanvasWidget : public QWidget
 {
@@ -15,10 +17,14 @@ class CanvasWidget : public QWidget
 public:
     explicit CanvasWidget(QWidget *parent = nullptr);
     
-    // Image operations
+    // Document operations
     bool loadImage(const QString &filePath);
     bool saveImage(const QString &filePath);
     void newImage(int width, int height);
+    
+    // Document access
+    std::shared_ptr<LibreCanvas::Document> getDocument() { return m_document; }
+    void setDocument(std::shared_ptr<LibreCanvas::Document> document);
     
     // Canvas operations
     void zoomIn();
@@ -27,13 +33,14 @@ public:
     void fitToWindow();
     
     // Getters
-    QImage getImage() const { return m_image; }
+    QImage getImage() const;
     float getZoomLevel() const { return m_zoomLevel; }
-    bool hasImage() const { return !m_image.isNull(); }
+    bool hasImage() const { return m_document != nullptr; }
 
 signals:
     void imageChanged();
     void zoomChanged(float zoom);
+    void documentChanged();
 
 protected:
     void paintEvent(QPaintEvent *event) override;
@@ -43,7 +50,7 @@ protected:
     void mouseReleaseEvent(QMouseEvent *event) override;
 
 private:
-    QImage m_image;
+    std::shared_ptr<LibreCanvas::Document> m_document;
     QPixmap m_pixmap;
     float m_zoomLevel;
     QPoint m_panStart;

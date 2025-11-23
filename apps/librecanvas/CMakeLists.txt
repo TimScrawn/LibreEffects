@@ -19,6 +19,10 @@ set(SOURCES
     src/mainwindow.h
     src/canvaswidget.cpp
     src/canvaswidget.h
+    src/layer.cpp
+    src/layer.h
+    src/document.cpp
+    src/document.h
 )
 
 # Application resources

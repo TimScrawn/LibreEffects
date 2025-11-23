@@ -7,6 +7,7 @@
 
 CanvasWidget::CanvasWidget(QWidget *parent)
     : QWidget(parent)
+    , m_document(nullptr)
     , m_zoomLevel(1.0f)
     , m_isPanning(false)
 {
@@ -27,20 +28,25 @@ bool CanvasWidget::loadImage(const QString &filePath)
         return false;
     }
     
-    m_image = loadedImage;
+    // Create document with loaded image
+    m_document = std::make_shared<LibreCanvas::Document>(loadedImage.width(), loadedImage.height());
+    auto layer = std::make_shared<LibreCanvas::Layer>("Layer 1", loadedImage);
+    m_document->addLayer(layer);
+    
     m_zoomLevel = 1.0f;
     m_panDelta = QPoint(0, 0);
     updatePixmap();
     update();
     
     emit imageChanged();
+    emit documentChanged();
     return true;
 }
 
 bool CanvasWidget::saveImage(const QString &filePath)
 {
-    if (m_image.isNull()) {
-        QMessageBox::warning(this, "Save Error", "No image to save.");
+    if (!m_document) {
+        QMessageBox::warning(this, "Save Error", "No document to save.");
         return false;
     }
     
@@ -49,7 +55,8 @@ bool CanvasWidget::saveImage(const QString &filePath)
         format = "PNG";
     }
     
-    if (!m_image.save(filePath, format.toLatin1().constData())) {
+    QImage rendered = m_document->render();
+    if (!rendered.save(filePath, format.toLatin1().constData())) {
         QMessageBox::warning(this, "Save Error", 
             QString("Failed to save image:\n%1").arg(filePath));
         return false;
@@ -60,14 +67,22 @@ bool CanvasWidget::saveImage(const QString &filePath)
 
 void CanvasWidget::newImage(int width, int height)
 {
-    m_image = QImage(width, height, QImage::Format_ARGB32);
-    m_image.fill(Qt::white);
+    m_document = std::make_shared<LibreCanvas::Document>(width, height, Qt::white);
     m_zoomLevel = 1.0f;
     m_panDelta = QPoint(0, 0);
     updatePixmap();
     update();
     
     emit imageChanged();
+    emit documentChanged();
+}
+
+void CanvasWidget::setDocument(std::shared_ptr<LibreCanvas::Document> document)
+{
+    m_document = document;
+    updatePixmap();
+    update();
+    emit documentChanged();
 }
 
 void CanvasWidget::zoomIn()
@@ -99,10 +114,10 @@ void CanvasWidget::resetZoom()
 
 void CanvasWidget::fitToWindow()
 {
-    if (m_image.isNull()) return;
+    if (!m_document) return;
     
     QSize widgetSize = size();
-    QSize imageSize = m_image.size();
+    QSize imageSize = m_document->getSize();
     
     float scaleX = static_cast<float>(widgetSize.width()) / imageSize.width();
     float scaleY = static_cast<float>(widgetSize.height()) / imageSize.height();
@@ -131,8 +146,8 @@ void CanvasWidget::paintEvent(QPaintEvent *event)
         }
     }
     
-    // Draw image if available
-    if (!m_pixmap.isNull()) {
+    // Draw document if available
+    if (m_document && !m_pixmap.isNull()) {
         QSize scaledSize = m_pixmap.size();
         QPoint drawPos = (rect().center() - QRect(0, 0, scaledSize.width(), scaledSize.height()).center()) + m_panDelta;
         painter.drawPixmap(drawPos, m_pixmap);
@@ -146,7 +161,7 @@ void CanvasWidget::paintEvent(QPaintEvent *event)
 
 void CanvasWidget::wheelEvent(QWheelEvent *event)
 {
-    if (m_image.isNull()) return;
+    if (!m_document) return;
     
     // Zoom with mouse wheel
     float delta = event->angleDelta().y() / 120.0f;
@@ -184,19 +199,31 @@ void CanvasWidget::mouseReleaseEvent(QMouseEvent *event)
 
 void CanvasWidget::updatePixmap()
 {
-    if (m_image.isNull()) {
+    if (!m_document) {
         m_pixmap = QPixmap();
         return;
     }
     
-    QSize scaledSize = m_image.size() * m_zoomLevel;
-    m_pixmap = QPixmap::fromImage(m_image.scaled(scaledSize, Qt::KeepAspectRatio, Qt::SmoothTransformation));
+    QImage rendered = m_document->render();
+    QSize scaledSize = rendered.size() * m_zoomLevel;
+    m_pixmap = QPixmap::fromImage(rendered.scaled(scaledSize, Qt::KeepAspectRatio, Qt::SmoothTransformation));
+}
+
+QImage CanvasWidget::getImage() const
+{
+    if (!m_document) {
+        return QImage();
+    }
+    return m_document->render();
 }
 
 QPoint CanvasWidget::imageToCanvas(const QPoint &point) const
 {
+    if (!m_document) return point;
+    
     // Convert image coordinates to canvas coordinates
-    QSize scaledSize = m_image.size() * m_zoomLevel;
+    QSize docSize = m_document->getSize();
+    QSize scaledSize = docSize * m_zoomLevel;
     QPoint canvasCenter = rect().center() + m_panDelta;
     QPoint imageTopLeft = canvasCenter - QPoint(scaledSize.width() / 2, scaledSize.height() / 2);
     return point - imageTopLeft;
@@ -204,8 +231,11 @@ QPoint CanvasWidget::imageToCanvas(const QPoint &point) const
 
 QPoint CanvasWidget::canvasToImage(const QPoint &point) const
 {
+    if (!m_document) return point;
+    
     // Convert canvas coordinates to image coordinates
-    QSize scaledSize = m_image.size() * m_zoomLevel;
+    QSize docSize = m_document->getSize();
+    QSize scaledSize = docSize * m_zoomLevel;
     QPoint canvasCenter = rect().center() + m_panDelta;
     QPoint imageTopLeft = canvasCenter - QPoint(scaledSize.width() / 2, scaledSize.height() / 2);
     QPoint relativePoint = point - imageTopLeft;

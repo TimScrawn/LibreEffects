@@ -31,6 +31,24 @@ obj/
 *.so
 *.dylib
 
+# CMake
+CMakeCache.txt
+CMakeFiles/
+cmake_install.cmake
+Makefile
+*.cmake
+!CMakeLists.txt
+
+# Qt
+*.pro.user
+*.pro.user.*
+moc_*.cpp
+moc_*.h
+qrc_*.cpp
+ui_*.h
+*.qmlc
+*.jsc
+
 # Dependencies
 node_modules/
 venv/
@@ -81,19 +99,10 @@ site/
 *.tar
 *.zip
 
-# CMake
-CMakeCache.txt
-CMakeFiles/
-cmake_install.cmake
-Makefile
-
 # Compiled Source
 *.com
 *.class
-*.dll
-*.exe
 *.o
-*.so
 
 # Debug Files
 *.pdb
@@ -101,4 +110,3 @@ Makefile
 *.user
 *.userosscache
 *.sln.docstates
-

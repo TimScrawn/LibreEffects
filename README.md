@@ -6,28 +6,53 @@
 
 Our goal is to create a comprehensive, free, and open-source suite of creative applications that rival Adobe's professional tools, making advanced creative software accessible to everyone.
 
-## 📦 Planned Applications
+## 📦 Applications
 
-- **LibrePhotoshop** - Advanced image editing and manipulation
-- **LibreAfterEffects** - Motion graphics and visual effects compositing
-- **LibrePremiere** - Video editing and production
-- **LibreIllustrator** - Vector graphics and illustration
-- **LibreInDesign** - Desktop publishing and layout design
-- **LibreAudition** - Audio editing and mixing
+- **LibreCanvas** - Advanced image editing and manipulation (Photoshop equivalent) 🎨
+- **LibrePremiere** - Video editing and production (Premiere Pro equivalent) 🎬
+- **LibreMotion** - Motion graphics and visual effects compositing (After Effects equivalent) ✨
+- **LibreVector** - Vector graphics and illustration (Illustrator equivalent) 📐
+- **LibreLayout** - Desktop publishing and layout design (InDesign equivalent) 📄
+- **LibreAudio** - Audio editing and mixing (Audition equivalent) 🎵
 
 ## 🚀 Getting Started
 
 ### Prerequisites
 
-*To be determined based on tech stack decisions*
+- **CMake** 3.20 or higher
+- **Qt6** (Core, Widgets, Gui modules)
+- **C++17** compatible compiler (GCC, Clang, or MSVC)
+- **Git** for version control
 
-### Installation
+### Building LibreCanvas
 
-*Installation instructions will be added as development progresses*
+```bash
+# Clone the repository
+git clone https://github.com/TimScrawn/LibreEffects.git
+cd LibreEffects
+
+# Create build directory
+mkdir build && cd build
+
+# Configure with CMake
+cmake ..
+
+# Build
+cmake --build .
+
+# Run LibreCanvas
+./apps/librecanvas/LibreCanvas  # Linux/Mac
+# or
+apps\librecanvas\Debug\LibreCanvas.exe  # Windows
+```
 
 ## 🛠️ Tech Stack
 
-*To be determined - open to suggestions and community input*
+- **C++17** - Core language for performance-critical operations
+- **Qt6** - Cross-platform UI framework
+- **CMake** - Build system
+- **OpenGL/Vulkan** - Graphics rendering (planned)
+- **Custom Branding System** - Unified theme across all applications
 
 ## 🤝 Contributing
 
@@ -49,10 +74,12 @@ We welcome contributions! Please see [CONTRIBUTING.md](CONTRIBUTING.md) for guid
 
 ## 📅 Roadmap
 
-- [ ] Project setup and architecture design
+- [x] Project setup and architecture design
+- [x] Branding system and theme framework
+- [x] LibreCanvas initial structure
 - [ ] Core rendering engine
-- [ ] LibrePhotoshop MVP
-- [ ] LibreAfterEffects MVP
+- [ ] LibreCanvas MVP (basic image editing)
+- [ ] LibrePremiere MVP
 - [ ] Additional applications
 - [ ] Documentation and tutorials
 

@@ -15,8 +15,8 @@ LayerPanel::LayerPanel(QWidget *parent)
 void LayerPanel::setupUI()
 {
     QVBoxLayout *mainLayout = new QVBoxLayout(this);
-    mainLayout->setContentsMargins(4, 4, 4, 4);
-    mainLayout->setSpacing(4);
+    mainLayout->setContentsMargins(12, 12, 12, 12);
+    mainLayout->setSpacing(12);
 
     // Layer tree
     m_layerTree = new QTreeWidget(this);
@@ -32,29 +32,38 @@ void LayerPanel::setupUI()
 
     // Button row
     QHBoxLayout *buttonLayout = new QHBoxLayout();
-    buttonLayout->setSpacing(2);
+    buttonLayout->setSpacing(6);
+    buttonLayout->setContentsMargins(0, 0, 0, 0);
 
     m_newLayerBtn = new QPushButton("+", this);
     m_newLayerBtn->setToolTip("New Layer");
-    m_newLayerBtn->setMaximumWidth(30);
+    m_newLayerBtn->setMinimumSize(36, 36);
+    m_newLayerBtn->setMaximumWidth(36);
+    m_newLayerBtn->setFont(QFont("Segoe UI", 16, QFont::Bold));
     connect(m_newLayerBtn, &QPushButton::clicked, this, &LayerPanel::onNewLayerClicked);
     buttonLayout->addWidget(m_newLayerBtn);
 
     m_deleteLayerBtn = new QPushButton("−", this);
     m_deleteLayerBtn->setToolTip("Delete Layer");
-    m_deleteLayerBtn->setMaximumWidth(30);
+    m_deleteLayerBtn->setMinimumSize(36, 36);
+    m_deleteLayerBtn->setMaximumWidth(36);
+    m_deleteLayerBtn->setFont(QFont("Segoe UI", 16, QFont::Bold));
     connect(m_deleteLayerBtn, &QPushButton::clicked, this, &LayerPanel::onDeleteLayerClicked);
     buttonLayout->addWidget(m_deleteLayerBtn);
 
     m_duplicateLayerBtn = new QPushButton("⧉", this);
     m_duplicateLayerBtn->setToolTip("Duplicate Layer");
-    m_duplicateLayerBtn->setMaximumWidth(30);
+    m_duplicateLayerBtn->setMinimumSize(36, 36);
+    m_duplicateLayerBtn->setMaximumWidth(36);
+    m_duplicateLayerBtn->setFont(QFont("Segoe UI", 14));
     connect(m_duplicateLayerBtn, &QPushButton::clicked, this, &LayerPanel::onDuplicateLayerClicked);
     buttonLayout->addWidget(m_duplicateLayerBtn);
 
     m_newGroupBtn = new QPushButton("📁", this);
     m_newGroupBtn->setToolTip("New Group");
-    m_newGroupBtn->setMaximumWidth(30);
+    m_newGroupBtn->setMinimumSize(36, 36);
+    m_newGroupBtn->setMaximumWidth(36);
+    m_newGroupBtn->setFont(QFont("Segoe UI", 14));
     connect(m_newGroupBtn, &QPushButton::clicked, this, &LayerPanel::onNewGroupClicked);
     buttonLayout->addWidget(m_newGroupBtn);
 
@@ -63,6 +72,8 @@ void LayerPanel::setupUI()
 
     // Layer properties panel
     QVBoxLayout *propsLayout = new QVBoxLayout();
+    propsLayout->setSpacing(10);
+    propsLayout->setContentsMargins(0, 0, 0, 0);
     
     // Layer name
     QHBoxLayout *nameLayout = new QHBoxLayout();

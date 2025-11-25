@@ -77,7 +77,7 @@ private:
     QDockWidget *m_toolDock;
     
     // History
-    std::shared_ptr<class HistoryManager> m_historyManager;
+    std::shared_ptr<LibreCanvas::HistoryManager> m_historyManager;
     
     // Layer management
     void createLayer();

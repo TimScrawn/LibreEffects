@@ -20,7 +20,7 @@ namespace LibreCanvas {
         void setOpacity(float opacity) { m_opacity = qBound(0.0f, opacity, 1.0f); }
 
     private:
-        void cloneBrush(QPainter& painter, const QPoint& sourcePos, const QPoint& destPos, int size, float hardness, float opacity);
+        void cloneBrush(QPainter& painter, const QImage& sourceImage, const QPoint& sourcePos, const QPoint& destPos, int size, float hardness, float opacity);
         
         int m_size = 20;
         float m_hardness = 1.0f;
@@ -29,6 +29,7 @@ namespace LibreCanvas {
         QPoint m_lastDestPos;
         bool m_sourceSet = false;
         bool m_isCloning = false;
+        QImage m_sourceImage;
     };
 
 } // namespace LibreCanvas

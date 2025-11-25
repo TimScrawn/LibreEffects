@@ -1,6 +1,7 @@
 #include "toolpanel.h"
 #include "lassotool.h"
 #include "clonestamptool.h"
+#include "transformtool.h"
 #include <QGridLayout>
 #include <QGroupBox>
 
@@ -14,12 +15,14 @@ ToolPanel::ToolPanel(QWidget *parent)
 void ToolPanel::setupUI()
 {
     QVBoxLayout *mainLayout = new QVBoxLayout(this);
-    mainLayout->setContentsMargins(4, 4, 4, 4);
-    mainLayout->setSpacing(4);
+    mainLayout->setContentsMargins(12, 12, 12, 12);
+    mainLayout->setSpacing(12);
 
     // Tool buttons
     QGroupBox *toolGroup = new QGroupBox("Tools", this);
     QGridLayout *toolLayout = new QGridLayout(toolGroup);
+    toolLayout->setSpacing(8);
+    toolLayout->setContentsMargins(12, 20, 12, 12);
     
     m_toolGroup = new QButtonGroup(this);
     
@@ -66,7 +69,14 @@ void ToolPanel::setupUI()
     m_toolGroup->addButton(cloneBtn, 5);
     toolLayout->addWidget(cloneBtn, 2, 1);
     
-    connect(m_toolGroup, QOverload<int>::of(&QButtonGroup::buttonClicked), 
+    QToolButton *transformBtn = new QToolButton(this);
+    transformBtn->setText("T");
+    transformBtn->setToolTip("Transform Tool (T)");
+    transformBtn->setCheckable(true);
+    m_toolGroup->addButton(transformBtn, 6);
+    toolLayout->addWidget(transformBtn, 3, 0);
+    
+    connect(m_toolGroup, &QButtonGroup::idClicked, 
             this, &ToolPanel::onToolButtonClicked);
     
     mainLayout->addWidget(toolGroup);
@@ -74,6 +84,8 @@ void ToolPanel::setupUI()
     // Brush properties
     QGroupBox *brushGroup = new QGroupBox("Brush", this);
     QVBoxLayout *brushLayout = new QVBoxLayout(brushGroup);
+    brushLayout->setSpacing(10);
+    brushLayout->setContentsMargins(12, 20, 12, 12);
     
     // Size
     QHBoxLayout *sizeLayout = new QHBoxLayout();
@@ -161,6 +173,9 @@ void ToolPanel::updateToolProperties()
         case LibreCanvas::ToolType::MagicWand:
             m_magicWandBtn->setChecked(true);
             break;
+        case LibreCanvas::ToolType::Transform:
+            // Transform button will be checked by button group
+            break;
         default:
             break;
     }
@@ -193,6 +208,9 @@ void ToolPanel::onToolButtonClicked(int id)
                 cloneTool->setHardness(m_hardnessSlider->value() / 100.0f);
                 cloneTool->setOpacity(m_opacitySlider->value() / 100.0f);
             }
+            break;
+        case 6: // Transform
+            tool = std::make_shared<LibreCanvas::TransformTool>();
             break;
     }
     

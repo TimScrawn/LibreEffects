@@ -5,6 +5,7 @@
 #include <QMouseEvent>
 #include <QKeyEvent>
 #include <QPainter>
+#include <QCursor>
 #include <memory>
 #include "document.h"
 #include "layer.h"
@@ -28,7 +29,8 @@ namespace LibreCanvas {
         Pen,
         Eyedropper,
         Zoom,
-        Hand
+        Hand,
+        Transform
     };
 
     class Tool : public QObject {

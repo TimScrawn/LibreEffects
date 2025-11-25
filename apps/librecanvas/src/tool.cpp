@@ -27,6 +27,8 @@ namespace LibreCanvas {
         
         drawBrush(painter, imagePos, m_size, m_hardness, m_color, m_opacity);
         painter.end();
+        
+        // Note: History is saved in canvas widget before tool operation
     }
 
     void BrushTool::onMouseMove(QMouseEvent *event, std::shared_ptr<Document> doc, const QPoint& imagePos)

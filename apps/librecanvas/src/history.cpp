@@ -27,6 +27,7 @@ namespace LibreCanvas {
 
         // Create deep copy of document
         auto docCopy = std::make_shared<Document>(document->getSize().width(), document->getSize().height());
+        docCopy->setBackgroundColor(document->getBackgroundColor());
         
         // Copy all layers
         for (int i = 0; i < document->getLayerCount(); ++i) {
@@ -36,10 +37,13 @@ namespace LibreCanvas {
             layerCopy->setBlendMode(layer->getBlendMode());
             layerCopy->setVisible(layer->isVisible());
             layerCopy->setLocked(layer->isLocked());
+            layerCopy->setOffset(layer->getOffset());
             docCopy->addLayer(layerCopy);
         }
         
-        docCopy->setActiveLayer(docCopy->getLayer(document->getLayerCount() - 1));
+        if (document->getLayerCount() > 0) {
+            docCopy->setActiveLayer(docCopy->getLayer(document->getLayerCount() - 1));
+        }
 
         auto state = std::make_shared<HistoryState>(docCopy);
         state->setDescription(description);

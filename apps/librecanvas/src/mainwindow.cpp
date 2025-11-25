@@ -206,33 +206,388 @@ void MainWindow::setupPanels()
 
 void MainWindow::applyTheme()
 {
-    // Apply dark theme styling
+    // Get modern theme colors
     auto bgColor = m_theme.getBackgroundColor();
     auto panelColor = m_theme.getPanelColor();
     auto textColor = m_theme.getTextColor();
+    auto textSecondary = m_theme.getTextTertiaryColor();
+    auto primaryColor = m_theme.getPrimaryColor();
+    auto primaryDark = m_theme.getPrimaryDark();
+    auto buttonHover = m_theme.getButtonHoverColor();
+    auto buttonActive = m_theme.getButtonActiveColor();
+    auto borderColor = m_theme.getBorderColor();
+    auto borderHover = m_theme.getBorderHoverColor();
+    auto panelHover = m_theme.getPanelHoverColor();
+    auto selectionColor = m_theme.getSelectionColor();
+    auto selectionHover = m_theme.getSelectionHoverColor();
     
     QString styleSheet = QString(
+        // Main Window
         "QMainWindow {"
         "    background-color: rgb(%1, %2, %3);"
         "    color: rgb(%4, %5, %6);"
+        "    font-family: 'Segoe UI', 'Inter', system-ui, sans-serif;"
+        "    font-size: 13px;"
         "}"
+        
+        // Menu Bar - Modern flat design
         "QMenuBar {"
         "    background-color: rgb(%7, %8, %9);"
         "    color: rgb(%4, %5, %6);"
+        "    border: none;"
+        "    padding: 4px;"
+        "    font-weight: 500;"
         "}"
+        "QMenuBar::item {"
+        "    background-color: transparent;"
+        "    padding: 6px 12px;"
+        "    border-radius: 6px;"
+        "    margin: 2px;"
+        "}"
+        "QMenuBar::item:selected {"
+        "    background-color: rgb(%10, %11, %12);"
+        "}"
+        "QMenuBar::item:pressed {"
+        "    background-color: rgb(%13, %14, %15);"
+        "}"
+        
+        // Menus - Modern dropdowns
+        "QMenu {"
+        "    background-color: rgb(%7, %8, %9);"
+        "    color: rgb(%4, %5, %6);"
+        "    border: 1px solid rgb(%16, %17, %18);"
+        "    border-radius: 8px;"
+        "    padding: 4px;"
+        "}"
+        "QMenu::item {"
+        "    padding: 8px 24px 8px 32px;"
+        "    border-radius: 6px;"
+        "    margin: 2px;"
+        "}"
+        "QMenu::item:selected {"
+        "    background-color: rgb(%10, %11, %12);"
+        "}"
+        "QMenu::separator {"
+        "    height: 1px;"
+        "    background-color: rgb(%16, %17, %18);"
+        "    margin: 4px 8px;"
+        "}"
+        
+        // Tool Bar
         "QToolBar {"
         "    background-color: rgb(%7, %8, %9);"
         "    border: none;"
+        "    border-bottom: 1px solid rgb(%16, %17, %18);"
+        "    spacing: 4px;"
+        "    padding: 4px;"
         "}"
+        
+        // Status Bar - Modern bottom bar
         "QStatusBar {"
         "    background-color: rgb(%7, %8, %9);"
         "    color: rgb(%4, %5, %6);"
+        "    border: none;"
+        "    border-top: 1px solid rgb(%16, %17, %18);"
+        "    padding: 4px 8px;"
+        "    font-size: 11px;"
         "}"
-    ).arg(bgColor[0]).arg(bgColor[1]).arg(bgColor[2])
-     .arg(textColor[0]).arg(textColor[1]).arg(textColor[2])
-     .arg(panelColor[0]).arg(panelColor[1]).arg(panelColor[2]);
+        
+        // Buttons - Modern rounded buttons
+        "QPushButton {"
+        "    background-color: rgb(%7, %8, %9);"
+        "    color: rgb(%4, %5, %6);"
+        "    border: 1px solid rgb(%16, %17, %18);"
+        "    border-radius: 8px;"
+        "    padding: 6px 12px;"
+        "    font-weight: 500;"
+        "    min-height: 28px;"
+        "}"
+        "QPushButton:hover {"
+        "    background-color: rgb(%10, %11, %12);"
+        "    border-color: rgb(%19, %20, %21);"
+        "}"
+        "QPushButton:pressed {"
+        "    background-color: rgb(%13, %14, %15);"
+        "    border-color: rgb(%22, %23, %24);"
+        "}"
+        "QPushButton:disabled {"
+        "    background-color: rgb(%7, %8, %9);"
+        "    color: rgb(%25, %26, %27);"
+        "    border-color: rgb(%16, %17, %18);"
+        "}"
+        
+        // Tool Buttons - Icon buttons
+        "QToolButton {"
+        "    background-color: rgb(%7, %8, %9);"
+        "    color: rgb(%4, %5, %6);"
+        "    border: 1px solid rgb(%16, %17, %18);"
+        "    border-radius: 8px;"
+        "    padding: 8px;"
+        "    min-width: 40px;"
+        "    min-height: 40px;"
+        "    font-weight: 600;"
+        "    font-size: 14px;"
+        "}"
+        "QToolButton:hover {"
+        "    background-color: rgb(%10, %11, %12);"
+        "    border-color: rgb(%19, %20, %21);"
+        "    transform: scale(1.05);"
+        "}"
+        "QToolButton:checked {"
+        "    background-color: rgb(%22, %23, %24);"
+        "    border-color: rgb(%22, %23, %24);"
+        "    color: rgb(255, 255, 255);"
+        "}"
+        "QToolButton:pressed {"
+        "    background-color: rgb(%13, %14, %15);"
+        "}"
+        
+        // Dock Widgets - Modern panels
+        "QDockWidget {"
+        "    background-color: rgb(%7, %8, %9);"
+        "    color: rgb(%4, %5, %6);"
+        "    titlebar-close-icon: none;"
+        "    titlebar-normal-icon: none;"
+        "    font-weight: 600;"
+        "}"
+        "QDockWidget::title {"
+        "    background-color: rgb(%7, %8, %9);"
+        "    padding: 8px 12px;"
+        "    border-bottom: 1px solid rgb(%16, %17, %18);"
+        "    font-size: 12px;"
+        "    text-transform: uppercase;"
+        "    letter-spacing: 0.5px;"
+        "}"
+        
+        // Group Boxes - Modern containers
+        "QGroupBox {"
+        "    background-color: transparent;"
+        "    color: rgb(%4, %5, %6);"
+        "    border: 1px solid rgb(%16, %17, %18);"
+        "    border-radius: 8px;"
+        "    margin-top: 12px;"
+        "    padding-top: 12px;"
+        "    font-weight: 600;"
+        "    font-size: 11px;"
+        "    text-transform: uppercase;"
+        "    letter-spacing: 0.5px;"
+        "}"
+        "QGroupBox::title {"
+        "    subcontrol-origin: margin;"
+        "    subcontrol-position: top left;"
+        "    padding: 0 8px;"
+        "    color: rgb(%25, %26, %27);"
+        "}"
+        
+        // Sliders - Modern sliders
+        "QSlider::groove:horizontal {"
+        "    background-color: rgb(%16, %17, %18);"
+        "    height: 4px;"
+        "    border-radius: 2px;"
+        "}"
+        "QSlider::handle:horizontal {"
+        "    background-color: rgb(%22, %23, %24);"
+        "    width: 16px;"
+        "    height: 16px;"
+        "    margin: -6px 0;"
+        "    border-radius: 8px;"
+        "    border: 2px solid rgb(%7, %8, %9);"
+        "}"
+        "QSlider::handle:horizontal:hover {"
+        "    background-color: rgb(%28, %29, %30);"
+        "    transform: scale(1.1);"
+        "}"
+        "QSlider::sub-page:horizontal {"
+        "    background-color: rgb(%22, %23, %24);"
+        "    border-radius: 2px;"
+        "}"
+        
+        // Spin Boxes - Modern number inputs
+        "QSpinBox, QDoubleSpinBox {"
+        "    background-color: rgb(%7, %8, %9);"
+        "    color: rgb(%4, %5, %6);"
+        "    border: 1px solid rgb(%16, %17, %18);"
+        "    border-radius: 6px;"
+        "    padding: 4px 8px;"
+        "    min-height: 24px;"
+        "}"
+        "QSpinBox:hover, QDoubleSpinBox:hover {"
+        "    border-color: rgb(%19, %20, %21);"
+        "}"
+        "QSpinBox:focus, QDoubleSpinBox:focus {"
+        "    border-color: rgb(%22, %23, %24);"
+        "    background-color: rgb(%10, %11, %12);"
+        "}"
+        
+        // Line Edits - Modern text inputs
+        "QLineEdit {"
+        "    background-color: rgb(%7, %8, %9);"
+        "    color: rgb(%4, %5, %6);"
+        "    border: 1px solid rgb(%16, %17, %18);"
+        "    border-radius: 6px;"
+        "    padding: 6px 10px;"
+        "    min-height: 24px;"
+        "}"
+        "QLineEdit:hover {"
+        "    border-color: rgb(%19, %20, %21);"
+        "}"
+        "QLineEdit:focus {"
+        "    border-color: rgb(%22, %23, %24);"
+        "    background-color: rgb(%10, %11, %12);"
+        "}"
+        
+        // Combo Boxes - Modern dropdowns
+        "QComboBox {"
+        "    background-color: rgb(%7, %8, %9);"
+        "    color: rgb(%4, %5, %6);"
+        "    border: 1px solid rgb(%16, %17, %18);"
+        "    border-radius: 6px;"
+        "    padding: 6px 10px;"
+        "    min-height: 24px;"
+        "}"
+        "QComboBox:hover {"
+        "    border-color: rgb(%19, %20, %21);"
+        "}"
+        "QComboBox:focus {"
+        "    border-color: rgb(%22, %23, %24);"
+        "}"
+        "QComboBox::drop-down {"
+        "    border: none;"
+        "    width: 20px;"
+        "}"
+        "QComboBox::down-arrow {"
+        "    image: none;"
+        "    border-left: 4px solid transparent;"
+        "    border-right: 4px solid transparent;"
+        "    border-top: 5px solid rgb(%4, %5, %6);"
+        "    margin-right: 6px;"
+        "}"
+        "QComboBox QAbstractItemView {"
+        "    background-color: rgb(%7, %8, %9);"
+        "    color: rgb(%4, %5, %6);"
+        "    border: 1px solid rgb(%16, %17, %18);"
+        "    border-radius: 8px;"
+        "    selection-background-color: rgb(%22, %23, %24);"
+        "    padding: 4px;"
+        "}"
+        
+        // Tree Widgets - Modern layer panel
+        "QTreeWidget {"
+        "    background-color: rgb(%7, %8, %9);"
+        "    color: rgb(%4, %5, %6);"
+        "    border: none;"
+        "    outline: none;"
+        "    font-size: 12px;"
+        "}"
+        "QTreeWidget::item {"
+        "    padding: 6px;"
+        "    border-radius: 4px;"
+        "    margin: 1px;"
+        "}"
+        "QTreeWidget::item:hover {"
+        "    background-color: rgb(%10, %11, %12);"
+        "}"
+        "QTreeWidget::item:selected {"
+        "    background-color: rgb(%22, %23, %24);"
+        "    color: rgb(255, 255, 255);"
+        "}"
+        "QTreeWidget::branch {"
+        "    background-color: transparent;"
+        "}"
+        
+        // Scroll Bars - Modern scrollbars
+        "QScrollBar:vertical {"
+        "    background-color: rgb(%7, %8, %9);"
+        "    width: 10px;"
+        "    border: none;"
+        "    margin: 0;"
+        "}"
+        "QScrollBar::handle:vertical {"
+        "    background-color: rgb(%16, %17, %18);"
+        "    min-height: 20px;"
+        "    border-radius: 5px;"
+        "    margin: 2px;"
+        "}"
+        "QScrollBar::handle:vertical:hover {"
+        "    background-color: rgb(%19, %20, %21);"
+        "}"
+        "QScrollBar::add-line:vertical, QScrollBar::sub-line:vertical {"
+        "    height: 0px;"
+        "}"
+        "QScrollBar:horizontal {"
+        "    background-color: rgb(%7, %8, %9);"
+        "    height: 10px;"
+        "    border: none;"
+        "    margin: 0;"
+        "}"
+        "QScrollBar::handle:horizontal {"
+        "    background-color: rgb(%16, %17, %18);"
+        "    min-width: 20px;"
+        "    border-radius: 5px;"
+        "    margin: 2px;"
+        "}"
+        "QScrollBar::handle:horizontal:hover {"
+        "    background-color: rgb(%19, %20, %21);"
+        "}"
+        "QScrollBar::add-line:horizontal, QScrollBar::sub-line:horizontal {"
+        "    width: 0px;"
+        "}"
+        
+        // Labels
+        "QLabel {"
+        "    color: rgb(%4, %5, %6);"
+        "    font-size: 12px;"
+        "}"
+        
+        // Checkboxes - Modern checkboxes
+        "QCheckBox {"
+        "    color: rgb(%4, %5, %6);"
+        "    spacing: 8px;"
+        "}"
+        "QCheckBox::indicator {"
+        "    width: 18px;"
+        "    height: 18px;"
+        "    border: 2px solid rgb(%16, %17, %18);"
+        "    border-radius: 4px;"
+        "    background-color: rgb(%7, %8, %9);"
+        "}"
+        "QCheckBox::indicator:hover {"
+        "    border-color: rgb(%19, %20, %21);"
+        "}"
+        "QCheckBox::indicator:checked {"
+        "    background-color: rgb(%22, %23, %24);"
+        "    border-color: rgb(%22, %23, %24);"
+        "    image: none;"
+        "}"
+        "QCheckBox::indicator:checked::after {"
+        "    content: '✓';"
+        "    color: white;"
+        "}"
+        
+        // Color Dialog Button (if needed)
+        "QPushButton#colorButton {"
+        "    border-radius: 6px;"
+        "    min-width: 60px;"
+        "    min-height: 30px;"
+        "}"
+    )
+    .arg(bgColor[0]).arg(bgColor[1]).arg(bgColor[2])           // Main window bg
+    .arg(textColor[0]).arg(textColor[1]).arg(textColor[2])    // Text primary
+    .arg(panelColor[0]).arg(panelColor[1]).arg(panelColor[2]) // Panel color
+    .arg(buttonHover[0]).arg(buttonHover[1]).arg(buttonHover[2]) // Button hover
+    .arg(buttonActive[0]).arg(buttonActive[1]).arg(buttonActive[2]) // Button active
+    .arg(borderColor[0]).arg(borderColor[1]).arg(borderColor[2]) // Border
+    .arg(borderHover[0]).arg(borderHover[1]).arg(borderHover[2]) // Border hover
+    .arg(primaryColor[0]).arg(primaryColor[1]).arg(primaryColor[2]) // Primary/Selection
+    .arg(selectionHover[0]).arg(selectionHover[1]).arg(selectionHover[2]) // Selection hover
+    .arg(textSecondary[0]).arg(textSecondary[1]).arg(textSecondary[2]); // Text secondary
     
     setStyleSheet(styleSheet);
+    
+    // Apply modern font
+    QFont modernFont("Segoe UI", 13);
+    modernFont.setStyleHint(QFont::SansSerif);
+    qApp->setFont(modernFont);
 }
 
 void MainWindow::newFile()

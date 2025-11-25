@@ -35,6 +35,8 @@ set(SOURCES
     src/lassotool.h
     src/clonestamptool.cpp
     src/clonestamptool.h
+    src/transformtool.cpp
+    src/transformtool.h
 )
 
 # Application resources

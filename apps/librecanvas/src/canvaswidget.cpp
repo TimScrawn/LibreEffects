@@ -1,6 +1,7 @@
 #include "canvaswidget.h"
 #include "tool.h"
 #include "history.h"
+#include "transformtool.h"
 #include <QPainter>
 #include <QWheelEvent>
 #include <QMouseEvent>
@@ -83,7 +84,6 @@ void CanvasWidget::newImage(int width, int height)
     m_document = std::make_shared<LibreCanvas::Document>(width, height, Qt::white);
     if (m_historyManager) {
         m_document->setHistoryManager(m_historyManager.get());
-        m_document->saveState("New Image");
     }
     m_zoomLevel = 1.0f;
     m_panDelta = QPoint(0, 0);
@@ -99,7 +99,6 @@ void CanvasWidget::setDocument(std::shared_ptr<LibreCanvas::Document> document)
     m_document = document;
     if (m_document && m_historyManager) {
         m_document->setHistoryManager(m_historyManager.get());
-        m_document->saveState("New Document");
     }
     updatePixmap();
     update();
@@ -193,7 +192,7 @@ void CanvasWidget::paintEvent(QPaintEvent *event)
 
 void CanvasWidget::drawSelection(QPainter& painter)
 {
-    if (!m_currentTool) return;
+    if (!m_currentTool || !m_document) return;
     
     // Draw marquee selection
     if (m_currentTool->getType() == LibreCanvas::ToolType::MarqueeRect) {
@@ -219,7 +218,66 @@ void CanvasWidget::drawSelection(QPainter& painter)
             painter.drawRect(scaledSelection);
         }
     }
-}
+    
+    // Draw transform handles
+    if (m_currentTool->getType() == LibreCanvas::ToolType::Transform) {
+        auto transformTool = std::dynamic_pointer_cast<LibreCanvas::TransformTool>(m_currentTool);
+        if (transformTool) {
+            QRect bounds = transformTool->isTransforming() ? 
+                          transformTool->getCurrentBounds() : 
+                          transformTool->getOriginalBounds();
+            
+            if (!bounds.isEmpty()) {
+                QSize docSize = m_document->getSize();
+                QSize scaledSize = docSize * m_zoomLevel;
+                QPoint canvasCenter = rect().center() + m_panDelta;
+                QPoint imageTopLeft = canvasCenter - QPoint(scaledSize.width() / 2, scaledSize.height() / 2);
+                
+                QRect scaledBounds(
+                    imageTopLeft.x() + bounds.x() * m_zoomLevel,
+                    imageTopLeft.y() + bounds.y() * m_zoomLevel,
+                    bounds.width() * m_zoomLevel,
+                    bounds.height() * m_zoomLevel
+                );
+                
+                // Draw bounding box
+                QPen pen(Qt::blue, 2);
+                painter.setPen(pen);
+                painter.setBrush(QBrush(Qt::white));
+                painter.drawRect(scaledBounds);
+                
+                // Draw corner handles
+                const int handleSize = 8;
+                QPoint corners[] = {
+                    scaledBounds.topLeft(),
+                    scaledBounds.topRight(),
+                    scaledBounds.bottomLeft(),
+                    scaledBounds.bottomRight()
+                };
+                for (const QPoint& corner : corners) {
+                    QRect handleRect(corner.x() - handleSize/2, corner.y() - handleSize/2, handleSize, handleSize);
+                    painter.drawRect(handleRect);
+                }
+                
+                // Draw edge handles
+                QPoint edges[] = {
+                    QPoint(scaledBounds.center().x(), scaledBounds.top()),
+                    QPoint(scaledBounds.center().x(), scaledBounds.bottom()),
+                    QPoint(scaledBounds.left(), scaledBounds.center().y()),
+                    QPoint(scaledBounds.right(), scaledBounds.center().y())
+                };
+                for (const QPoint& edge : edges) {
+                    QRect handleRect(edge.x() - handleSize/2, edge.y() - handleSize/2, handleSize, handleSize);
+                    painter.drawRect(handleRect);
+                }
+                
+                // Draw rotation handle
+                QPoint rotHandle = QPoint(scaledBounds.center().x(), scaledBounds.top() - 20);
+                QRect rotHandleRect(rotHandle.x() - handleSize/2, rotHandle.y() - handleSize/2, handleSize, handleSize);
+                painter.drawEllipse(rotHandleRect);
+            }
+        }
+    }
 }
 
 void CanvasWidget::wheelEvent(QWheelEvent *event)
@@ -247,6 +305,10 @@ void CanvasWidget::mousePressEvent(QMouseEvent *event)
     if (m_currentTool && m_document && event->button() == Qt::LeftButton) {
         QPoint imagePos = canvasToImage(event->pos());
         m_currentTool->onMousePress(event, m_document, imagePos);
+        // Save state before tool operation
+        if (m_historyManager && m_document) {
+            m_historyManager->pushState(m_document, "Tool Operation");
+        }
         updatePixmap();
         update();
     }
@@ -282,9 +344,6 @@ void CanvasWidget::mouseReleaseEvent(QMouseEvent *event)
     if (m_currentTool && m_document && event->button() == Qt::LeftButton) {
         QPoint imagePos = canvasToImage(event->pos());
         m_currentTool->onMouseRelease(event, m_document, imagePos);
-        if (m_document) {
-            m_document->saveState("Tool Operation");
-        }
         updatePixmap();
         update();
         emit imageChanged();

@@ -132,10 +132,8 @@ namespace LibreCanvas {
 
     void Document::saveState(const QString& description)
     {
-        if (m_historyManager) {
-            auto self = shared_from_this();
-            m_historyManager->pushState(self, description);
-        }
+        // History manager will be called from canvas widget with the shared_ptr
+        // This method is kept for compatibility but actual saving happens in canvas widget
     }
 
     bool Document::canUndo() const

@@ -36,7 +36,6 @@ public:
     void zoomOut();
     void resetZoom();
     void fitToWindow();
-    void updatePixmap();
     
     // Getters
     QImage getImage() const;
